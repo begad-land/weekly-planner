@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weekly Calendar</title>
+    <style>
+        body {
+            background-color: #000;
+            color: #fff;
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        h1 {
+            text-align: center;
+            padding: 1rem 0;
+            margin: 0;
+            font-size: 1.5rem;
+        }
+        
+        .calendar-container {
+            flex: 1;
+            display: flex;
+            height: calc(100vh - 3rem);
+        }
+        
+        .calendar {
+            display: flex;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .day {
+            flex: 1;
+            text-align: center;
+            padding: 1rem;
+            position: relative;
+            height: 100%;
+            overflow-y: auto;
+        }
+        
+        .day:not(:last-child)::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            right: 0;
+            height: 100%;
+            width: 1px;
+            background-color: rgba(255, 255, 255, 0.3);
+        }
+        
+        .task-bubble {
+            background-color: #333;
+            border-radius: 8px;
+            padding: 8px;
+            margin: 8px 0;
+            border-left: 3px solid #4CAF50;
+            cursor: move; /* Indicates the item is draggable */
+            text-align: left;
+        }
+        
+        /* Visual feedback for the item being dragged */
+        .task-bubble.dragging {
+            opacity: 0.5;
+        }
+        
+        .task-time {
+            font-size: 0.8rem;
+            color: #aaa;
+        }
+        
+        .task-title {
+            font-weight: bold;
+            margin-top: 4px;
+        }
+        
+        .task-desc {
+            font-size: 0.8rem;
+            color: #ccc;
+            margin-top: 4px;
+        }
+
+        .task-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .update-task-btn, .delete-task-btn {
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            color: white;
+            cursor: pointer;
+            font-size: 0.75rem;
+        }
+
+        .update-task-btn {
+            background-color: #3498db; /* Blue */
+        }
+
+        .delete-task-btn {
+            background-color: #e74c3c; /* Red */
+        }
+        
+        .add-button {
+            position: fixed;
+            bottom: 1rem;
+            right: 1rem;
+            width: 3rem;
+            height: 3rem;
+            border-radius: 50%;
+            background-color: #fff;
+            color: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+            z-index: 10;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.7);
+            z-index: 20;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background-color: #222;
+            padding: 2rem;
+            border-radius: 8px;
+            width: 400px;
+            max-width: 90%;
+        }
+        
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.5rem;
+            background-color: #333;
+            border: 1px solid #444;
+            color: white;
+            border-radius: 4px;
+        }
+        
+        .form-group textarea {
+            min-height: 100px;
+        }
+        
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .submit-btn {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .cancel-btn {
+            background-color: #f44336;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>Days of the Week</h1>
+    
+    <div class="calendar-container">
+        <div class="calendar">
+            <div class="day">
+                Monday
+                <div class="tasks-container">
+                    {% for task in tasks %}
+                        {% if task.day == 'Monday' %}
+                            <div class="task-bubble" draggable="true">
+                                <div class="task-time">
+                                    {{ task.start_time|time:"g:i A" }} - {{ task.end_time|time:"g:i A" }}
+                                </div>
+                                <div class="task-title">{{ task.title }}</div>
+                                {% if task.description %}
+                                    <div class="task-desc">{{ task.description }}</div>
+                                {% endif %}
+                                <div class="task-buttons">
+                                    <a href="{% url 'update' task.id %}" class="update-task-btn">Update</a>
+                                    <a href="{% url 'delete' task.id %}" class="delete-task-btn">Delete</a>
+
+                                </div>
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <div class="day">
+                Tuesday
+                <div class="tasks-container">
+                    {% for task in tasks %}
+                        {% if task.day == 'Tuesday' %}
+                            <div class="task-bubble" draggable="true">
+                                <div class="task-time">
+                                    {{ task.start_time|time:"g:i A" }} - {{ task.end_time|time:"g:i A" }}
+                                </div>
+                                <div class="task-title">{{ task.title }}</div>
+                                {% if task.description %}
+                                    <div class="task-desc">{{ task.description }}</div>
+                                {% endif %}
+                                <div class="task-buttons">
+                                    <a href="{% url 'update' task.id %}" class="update-task-btn">Update</a>
+                                    <a href="{% url 'delete' task.id %}" class="delete-task-btn">Delete</a>
+
+                                </div>
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <div class="day">
+                Wednesday
+                <div class="tasks-container">
+                    {% for task in tasks %}
+                        {% if task.day == 'Wednesday' %}
+                            <div class="task-bubble" draggable="true">
+                                <div class="task-time">
+                                    {{ task.start_time|time:"g:i A" }} - {{ task.end_time|time:"g:i A" }}
+                                </div>
+                                <div class="task-title">{{ task.title }}</div>
+                                {% if task.description %}
+                                    <div class="task-desc">{{ task.description }}</div>
+                                {% endif %}
+                                <div class="task-buttons">
+                                    <a href="{% url 'update' task.id %}" class="update-task-btn">Update</a>
+                                    <a href="{% url 'delete' task.id %}" class="delete-task-btn">Delete</a>
+
+                                </div>
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <div class="day">
+                Thursday
+                <div class="tasks-container">
+                    {% for task in tasks %}
+                        {% if task.day == 'Thursday' %}
+                            <div class="task-bubble" draggable="true">
+                                <div class="task-time">
+                                    {{ task.start_time|time:"g:i A" }} - {{ task.end_time|time:"g:i A" }}
+                                </div>
+                                <div class="task-title">{{ task.title }}</div>
+                                {% if task.description %}
+                                    <div class="task-desc">{{ task.description }}</div>
+                                {% endif %}
+                                <div class="task-buttons">
+                                    <a href="{% url 'update' task.id %}" class="update-task-btn">Update</a>
+                                    <a href="{% url 'delete' task.id %}" class="delete-task-btn">Delete</a>
+
+                                </div>
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <div class="day">
+                Friday
+                <div class="tasks-container">
+                    {% for task in tasks %}
+                        {% if task.day == 'Friday' %}
+                            <div class="task-bubble" draggable="true">
+                                <div class="task-time">
+                                    {{ task.start_time|time:"g:i A" }} - {{ task.end_time|time:"g:i A" }}
+                                </div>
+                                <div class="task-title">{{ task.title }}</div>
+                                {% if task.description %}
+                                    <div class="task-desc">{{ task.description }}</div>
+                                {% endif %}
+                                <div class="task-buttons">
+                                    <a href="{% url 'update' task.id %}" class="update-task-btn">Update</a>
+                                    <a href="{% url 'delete' task.id %}" class="delete-task-btn">Delete</a>
+
+                                </div>
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <div class="day">
+                Saturday
+                <div class="tasks-container">
+                    {% for task in tasks %}
+                        {% if task.day == 'Saturday' %}
+                            <div class="task-bubble" draggable="true">
+                                <div class="task-time">
+                                    {{ task.start_time|time:"g:i A" }} - {{ task.end_time|time:"g:i A" }}
+                                </div>
+                                <div class="task-title">{{ task.title }}</div>
+                                {% if task.description %}
+                                    <div class="task-desc">{{ task.description }}</div>
+                                {% endif %}
+                                <div class="task-buttons">
+                                    <a href="{% url 'update' task.id %}" class="update-task-btn">Update</a>
+                                    <a href="{% url 'delete' task.id %}" class="delete-task-btn">Delete</a>
+
+                                </div>
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <div class="day">
+                Sunday
+                <div class="tasks-container">
+                    {% for task in tasks %}
+                        {% if task.day == 'Sunday' %}
+                            <div class="task-bubble" draggable="true">
+                                <div class="task-time">
+                                    {{ task.start_time|time:"g:i A" }} - {{ task.end_time|time:"g:i A" }}
+                                </div>
+                                <div class="task-title">{{ task.title }}</div>
+                                {% if task.description %}
+                                    <div class="task-desc">{{ task.description }}</div>
+                                {% endif %}
+                                <div class="task-buttons">
+                                    <a href="{% url 'update' task.id %}" class="update-task-btn">Update</a>
+                                    <a href="{% url 'delete' task.id %}" class="delete-task-btn">Delete</a>
+
+
+                                </div>
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <button class="add-button" id="addButton">+</button>
+
+    <div class="modal" id="taskModal">
+        <div class="modal-content">
+            <h2>Add New Task</h2>
+            <form id="taskForm" method="post" action="/home">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="id_day">Day</label>
+                    <select id="id_day" name="day" required>
+                        <option value="">Select a day</option>
+                        <option value="Monday">Monday</option>
+                        <option value="Tuesday">Tuesday</option>
+                        <option value="Wednesday">Wednesday</option>
+                        <option value="Thursday">Thursday</option>
+                        <option value="Friday">Friday</option>
+                        <option value="Saturday">Saturday</option>
+                        <option value="Sunday">Sunday</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="id_title">Title</label>
+                    <input type="text" id="id_title" name="title" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="id_description">Description</label>
+                    <textarea id="id_description" name="description"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="start_time">Start Time</label>
+                    <input type="time" id="start_time" name="start_time" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="end_time">End Time</label>
+                    <input type="time" id="end_time" name="end_time" required>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="cancel-btn" id="cancelButton">Cancel</button>
+                    <button type="submit" class="submit-btn">Submit</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Modal functionality
+        const addButton = document.getElementById('addButton');
+        const modal = document.getElementById('taskModal');
+        const cancelButton = document.getElementById('cancelButton');
+        
+        addButton.addEventListener('click', () => {
+            modal.style.display = 'flex';
+        });
+        
+        cancelButton.addEventListener('click', () => {
+            modal.style.display = 'none';
+        });
+        
+        // Close modal when clicking outside
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.style.display = 'none';
+            }
+        });
+
+        // --- DRAG AND DROP FUNCTIONALITY ---
+
+        const draggables = document.querySelectorAll('.task-bubble');
+        const containers = document.querySelectorAll('.tasks-container');
+
+        draggables.forEach(draggable => {
+            draggable.addEventListener('dragstart', () => {
+                draggable.classList.add('dragging');
+            });
+
+            draggable.addEventListener('dragend', () => {
+                draggable.classList.remove('dragging');
+            });
+        });
+
+        containers.forEach(container => {
+            container.addEventListener('dragover', e => {
+                e.preventDefault(); // Allow dropping
+                const afterElement = getDragAfterElement(container, e.clientY);
+                const draggable = document.querySelector('.dragging');
+                if (afterElement == null) {
+                    container.appendChild(draggable);
+                } else {
+                    container.insertBefore(draggable, afterElement);
+                }
+            });
+        });
+
+        function getDragAfterElement(container, y) {
+            const draggableElements = [...container.querySelectorAll('.task-bubble:not(.dragging)')];
+
+            return draggableElements.reduce((closest, child) => {
+                const box = child.getBoundingClientRect();
+                const offset = y - box.top - box.height / 2;
+                if (offset < 0 && offset > closest.offset) {
+                    return { offset: offset, element: child };
+                } else {
+                    return closest;
+                }
+            }, { offset: Number.NEGATIVE_INFINITY }).element;
+        }
+
+    </script>
+</body>
+</html>
