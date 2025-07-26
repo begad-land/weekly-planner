@@ -197,11 +197,43 @@
             border-radius: 4px;
             cursor: pointer;
         }
+
+        /* Confirmation modal styles */
+        .confirmation-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.7);
+            z-index: 30;
+            display: none;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .confirmation-content {
+            background-color: #222;
+            padding: 2rem;
+            border-radius: 8px;
+            width: 400px;
+            max-width: 90%;
+        }
+
+        .confirmation-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
     </style>
 </head>
 <body>
     <h1>Days of the Week</h1>
     
+    <button id="deleteAllBtn" style="position: absolute; top: 1rem; right: 1rem; background-color: #e74c3c; color: white; border: none; padding: 0.5rem 1rem; border-radius: 0 0.5rem 0.5rem 0.5rem; cursor: pointer;">Delete all tasks</button>
+
     <div class="calendar-container">
         <div class="calendar">
             <div class="day">
@@ -220,7 +252,6 @@
                                 <div class="task-buttons">
                                     <a href="{% url 'update' task.id %}" class="update-task-btn">Update</a>
                                     <a href="{% url 'delete' task.id %}" class="delete-task-btn">Delete</a>
-
                                 </div>
                             </div>
                         {% endif %}
@@ -244,7 +275,6 @@
                                 <div class="task-buttons">
                                     <a href="{% url 'update' task.id %}" class="update-task-btn">Update</a>
                                     <a href="{% url 'delete' task.id %}" class="delete-task-btn">Delete</a>
-
                                 </div>
                             </div>
                         {% endif %}
@@ -268,7 +298,6 @@
                                 <div class="task-buttons">
                                     <a href="{% url 'update' task.id %}" class="update-task-btn">Update</a>
                                     <a href="{% url 'delete' task.id %}" class="delete-task-btn">Delete</a>
-
                                 </div>
                             </div>
                         {% endif %}
@@ -292,7 +321,6 @@
                                 <div class="task-buttons">
                                     <a href="{% url 'update' task.id %}" class="update-task-btn">Update</a>
                                     <a href="{% url 'delete' task.id %}" class="delete-task-btn">Delete</a>
-
                                 </div>
                             </div>
                         {% endif %}
@@ -316,7 +344,6 @@
                                 <div class="task-buttons">
                                     <a href="{% url 'update' task.id %}" class="update-task-btn">Update</a>
                                     <a href="{% url 'delete' task.id %}" class="delete-task-btn">Delete</a>
-
                                 </div>
                             </div>
                         {% endif %}
@@ -340,7 +367,6 @@
                                 <div class="task-buttons">
                                     <a href="{% url 'update' task.id %}" class="update-task-btn">Update</a>
                                     <a href="{% url 'delete' task.id %}" class="delete-task-btn">Delete</a>
-
                                 </div>
                             </div>
                         {% endif %}
@@ -364,8 +390,6 @@
                                 <div class="task-buttons">
                                     <a href="{% url 'update' task.id %}" class="update-task-btn">Update</a>
                                     <a href="{% url 'delete' task.id %}" class="delete-task-btn">Delete</a>
-
-
                                 </div>
                             </div>
                         {% endif %}
@@ -377,6 +401,19 @@
 
     <button class="add-button" id="addButton">+</button>
 
+    <!-- Confirmation Modal -->
+    <div class="confirmation-modal" id="confirmationModal">
+        <div class="confirmation-content">
+            <h2>Confirm Deletion</h2>
+            <p>Are you sure you want to delete ALL tasks? This action cannot be undone.</p>
+            <div class="confirmation-actions">
+                <button id="cancelDelete" class="cancel-btn">Cancel</button>
+                <a href="{% url 'delete_all' %}" id="confirmDelete" class="submit-btn" style="background-color: #e74c3c;">Delete All</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Task Modal -->
     <div class="modal" id="taskModal">
         <div class="modal-content">
             <h2>Add New Task</h2>
@@ -408,12 +445,12 @@
                 
                 <div class="form-group">
                     <label for="start_time">Start Time</label>
-                    <input type="time" id="start_time" name="start_time" required>
+                    <input type="time" id="start_time" name="start_time">
                 </div>
                 
                 <div class="form-group">
                     <label for="end_time">End Time</label>
-                    <input type="time" id="end_time" name="end_time" required>
+                    <input type="time" id="end_time" name="end_time">
                 </div>
                 
                 <div class="form-actions">
@@ -445,8 +482,28 @@
             }
         });
 
-        // --- DRAG AND DROP FUNCTIONALITY ---
+        // Delete all tasks confirmation
+        const deleteAllBtn = document.getElementById('deleteAllBtn');
+        const confirmationModal = document.getElementById('confirmationModal');
+        const cancelDelete = document.getElementById('cancelDelete');
+        
+        deleteAllBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            confirmationModal.style.display = 'flex';
+        });
+        
+        cancelDelete.addEventListener('click', () => {
+            confirmationModal.style.display = 'none';
+        });
+        
+        // Close confirmation modal when clicking outside
+        confirmationModal.addEventListener('click', (e) => {
+            if (e.target === confirmationModal) {
+                confirmationModal.style.display = 'none';
+            }
+        });
 
+        // --- DRAG AND DROP FUNCTIONALITY ---
         const draggables = document.querySelectorAll('.task-bubble');
         const containers = document.querySelectorAll('.tasks-container');
 
@@ -486,7 +543,6 @@
                 }
             }, { offset: Number.NEGATIVE_INFINITY }).element;
         }
-
     </script>
 </body>
 </html>

@@ -17,8 +17,8 @@ class TaskModel(models.Model):
     day = models.CharField(max_length=10, choices=DAY_CHOICES)
     title = models.CharField(max_length=100)
     description = models.TextField()
-    start_time = models.TimeField()
-    end_time = models.TimeField()
+    start_time = models.TimeField(blank = True , null= True)
+    end_time = models.TimeField(blank = True , null = True)
 
     duration = models.CharField()
 

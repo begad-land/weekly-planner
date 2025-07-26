@@ -97,3 +97,11 @@ class UpdateTask(View):
                 
                 task.save()
             return redirect('/home')
+        
+
+
+class DeleteAll(View):
+    def get(self, request):
+        all_things_to_do = TaskModel.objects.all()
+        all_things_to_do.delete()
+        return redirect("/home")
